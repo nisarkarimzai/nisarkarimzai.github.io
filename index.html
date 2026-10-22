@@ -441,6 +441,14 @@
       .send-msg.ok { color: var(--ok); }
       .send-msg.err { color: var(--red); }
       .mic-err { color: var(--red); font-weight: 600; margin: 10px 0 0; font-size: 0.98rem; }
+      .env-note {
+        max-width: 760px; margin: 14px auto 0; padding: 12px 16px;
+        width: calc(100% - 32px);
+        background: var(--amber-soft); color: var(--ink);
+        border: 2px solid var(--amber); border-radius: var(--radius);
+        font-weight: 600; font-size: 1rem; line-height: 1.8;
+      }
+      .env-note[hidden] { display: none; }
 
       /* ---------- Admin (director) ---------- */
       header { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
@@ -529,6 +537,8 @@
       <input id="actorName" type="text" autocomplete="name" placeholder="مثلاً: احمد" />
       <p class="name-hint" id="nameHint">لېږلو مخکې لومړی خپل نوم ولیکئ.</p>
     </div>
+
+    <p class="env-note" id="envNote" hidden></p>
 
     <main>
       <!-- ===== Home view ===== -->
@@ -1169,7 +1179,11 @@
         try {
           var AC = window.AudioContext || window.webkitAudioContext;
           if (!AC) return;
-          rec.audioCtx = new AC();
+          /* Prefer the shared context that was created/resumed inside
+             the record-button tap; a fresh one created here, after the
+             permission prompt, can stay suspended on iPhone and leave
+             the meter frozen at zero while recording. */
+          rec.audioCtx = (gestureCtx && gestureCtx.state !== "closed") ? gestureCtx : new AC();
           if (rec.audioCtx.resume) rec.audioCtx.resume();
           var src = rec.audioCtx.createMediaStreamSource(stream);
           rec.analyser = rec.audioCtx.createAnalyser();
@@ -1220,6 +1234,10 @@
           }
           var rms = Math.sqrt(sum / time.length);
           var level = Math.min(1, rms * 3.2);
+          /* Highest level heard during this take: finishRecording uses
+             it to warn when a take captured silence (muted/blocked mic)
+             instead of quietly saving an empty-feeling recording. */
+          if (level > (rec.maxLevel || 0)) rec.maxLevel = level;
           if (peak > rec.peakHold) rec.peakHold = peak;
           else rec.peakHold = Math.max(0, rec.peakHold - 0.003);
           var m = rec.meter;
@@ -1242,6 +1260,11 @@
         frame();
       }
 
+      /* One shared AudioContext for the level meter, created inside the
+         record-button tap (see startRecording) and reused for every
+         take, so iOS never leaves it suspended. */
+      var gestureCtx = null;
+
       function startRecording(key, card) {
         var info = lineByKey(key);
         if (info && info.char.locked) return; /* completed character — no more recording */
@@ -1250,23 +1273,49 @@
         var micErr = card.querySelector(".mic-err");
         micErr.hidden = true;
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
-          micErr.textContent = "ستاسو براوزر ثبت نه شي کولی. مهرباني وکړئ Chrome یا Safari وکاروئ.";
+          micErr.textContent = "ستاسو براوزر ثبت نه شي کولی. مهرباني وکړئ دا پاڼه په Chrome یا Safari کې پرانیزئ — که لینک په وټساپ کې راغلی وي، هلته یې مه پرانیزئ.";
           micErr.hidden = false;
           return;
         }
-        /* Studio quality: ALL browser audio processing is switched off
-           (no echo cancellation, no noise suppression, no automatic gain)
-           so the voice is captured raw and unchanged, at 48 kHz. */
+        /* Warm up the meter's AudioContext NOW, inside the tap: on
+           iPhone a context first created after the permission prompt
+           starts suspended, so the level meter and waveform sit at zero
+           for the whole take and the actor thinks nothing is being
+           recorded even though the mic is capturing. */
+        try {
+          var AC0 = window.AudioContext || window.webkitAudioContext;
+          if (AC0) {
+            if (!gestureCtx || gestureCtx.state === "closed") gestureCtx = new AC0();
+            if (gestureCtx.resume) gestureCtx.resume();
+          }
+        } catch (e) {}
+        /* Studio quality: browser processing off so the voice is raw —
+           but every value is an "ideal", never a hard demand. Passed as
+           bare true/false (the old form) these are EXACT requirements:
+           phones whose audio path cannot switch processing off reject
+           getUserMedia outright (OverconstrainedError), and the old
+           code then misreported that as a permission problem the actor
+           could never fix. If the studio request still fails for any
+           reason other than a refused permission, retry once with the
+           plainest possible request before giving up. */
         var RAW_AUDIO = {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
+          echoCancellation: { ideal: false },
+          noiseSuppression: { ideal: false },
+          autoGainControl: { ideal: false },
           sampleRate: { ideal: 48000 }
         };
-        var constraints = mode === "video"
+        var studio = mode === "video"
           ? { audio: RAW_AUDIO, video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } }
           : { audio: RAW_AUDIO };
-        navigator.mediaDevices.getUserMedia(constraints).then(function (stream) {
+        var basic = mode === "video"
+          ? { audio: true, video: { facingMode: "user" } }
+          : { audio: true };
+        navigator.mediaDevices.getUserMedia(studio).then(begin, function (err) {
+          if (err && (err.name === "NotAllowedError" || err.name === "SecurityError")) { micError(err); return; }
+          navigator.mediaDevices.getUserMedia(basic).then(begin, micError);
+        });
+
+        function begin(stream) {
           var mime = mode === "video" ? pickVideoMime() : pickAudioMime();
           /* Highest audio bitrate for the cleanest take */
           var recOpts = { audioBitsPerSecond: 256000 };
@@ -1279,7 +1328,8 @@
           }
           var rec = {
             key: key, card: card, mode: mode, recorder: mr, stream: stream,
-            chunks: [], startedAt: Date.now(), canvas: card.querySelector(".wave")
+            chunks: [], startedAt: Date.now(), canvas: card.querySelector(".wave"),
+            maxLevel: 0
           };
           mr.addEventListener("dataavailable", function (ev) { if (ev.data && ev.data.size) rec.chunks.push(ev.data); });
           mr.addEventListener("stop", function () { finishRecording(rec); });
@@ -1303,12 +1353,26 @@
             card.querySelector(".rec-timer").textContent = fmtTime(s);
             if (s >= 120) stopRecording(false); /* 2-minute cap per line */
           }, 250);
-        }).catch(function () {
-          micErr.textContent = mode === "video"
-            ? "کامرې او مایکروفون ته اجازه ورکړئ: د براوزر په تنظیماتو کې دې پاڼې ته اجازه ورکړئ، بیا بیا هڅه وکړئ."
-            : "مایکروفون ته اجازه ورکړئ: د براوزر په تنظیماتو کې دې پاڼې ته د مایکروفون اجازه ورکړئ، بیا بیا هڅه وکړئ.";
+        }
+
+        /* Say what actually went wrong, with the fix for that cause —
+           the old single "allow the microphone" text sent actors to
+           the wrong setting whenever the failure was anything else. */
+        function micError(err) {
+          var name = err && err.name ? err.name : "";
+          if (name === "NotAllowedError" || name === "SecurityError") {
+            micErr.textContent = mode === "video"
+              ? "کامرې او مایکروفون ته اجازه نشته. که مخکې مو «نه» ویلي وي، د براوزر په تنظیماتو کې دې پاڼې ته اجازه ورکړئ، بیا پاڼه بیا پرانیزئ. که پاڼه د وټساپ دننه خلاصه وي، لومړی یې په Chrome یا Safari کې پرانیزئ."
+              : "مایکروفون ته اجازه نشته. که مخکې مو «نه» ویلي وي، د براوزر په تنظیماتو کې دې پاڼې ته د مایکروفون اجازه ورکړئ، بیا پاڼه بیا پرانیزئ. که پاڼه د وټساپ دننه خلاصه وي، لومړی یې په Chrome یا Safari کې پرانیزئ.";
+          } else if (name === "NotFoundError" || name === "OverconstrainedError") {
+            micErr.textContent = "په دې ټیلیفون کې مایکروفون ونه موندل شو. که بلوټوت هیډسیټ مو نښلولی وي، لرې یې کړئ او بیا هڅه وکړئ.";
+          } else if (name === "NotReadableError" || name === "AbortError") {
+            micErr.textContent = "مایکروفون اوس بوخت دی — کېدای شي بل اپ یې کاروي. نور اپونه (په ځانګړي ډول زنګ او ریکارډر) بند کړئ او بیا هڅه وکړئ.";
+          } else {
+            micErr.textContent = "ثبت پیل نه شو. بیا هڅه وکړئ؛ که ونه شو، پاڼه په Chrome یا Safari کې پرانیزئ او هلته ثبت وکړئ.";
+          }
           micErr.hidden = false;
-        });
+        }
       }
 
       function stopRecording(discard) {
@@ -1317,23 +1381,67 @@
         recording = null;
         clearInterval(rec.timerId);
         if (rec.rafId) cancelAnimationFrame(rec.rafId);
-        if (rec.audioCtx) { try { rec.audioCtx.close(); } catch (e) {} }
+        /* A per-take context is closed; the shared gesture context
+           stays open for the next take. */
+        if (rec.audioCtx && rec.audioCtx !== gestureCtx) { try { rec.audioCtx.close(); } catch (e) {} }
         rec.discard = !!discard;
         if (rec.recorder.state !== "inactive") rec.recorder.stop();
-        rec.stream.getTracks().forEach(function (t) { t.stop(); });
+        else finishRecording(rec);
+        /* The mic/camera tracks are released inside finishRecording,
+           once the recorder has flushed its final chunk. Stopping them
+           here, synchronously, starves that flush on some phones
+           (notably iPhone Safari) and the take comes out empty. */
         setCardRecordingUI(rec.card, false);
       }
 
       function finishRecording(rec) {
+        if (rec.finished) return;
+        rec.finished = true;
+        rec.stream.getTracks().forEach(function (t) { t.stop(); });
         if (rec.discard) return;
         var type = rec.recorder.mimeType || (rec.mode === "video" ? "video/webm" : "audio/webm");
         var blob = new Blob(rec.chunks, { type: type });
-        if (!blob.size) return;
+        var micErr = rec.card.querySelector(".mic-err");
+        if (!blob.size) {
+          /* Never fail quietly: the old silent return here is exactly
+             what "my voice is not recorded" looked like to the actor —
+             she recorded, stopped, and nothing ever appeared. */
+          micErr.textContent = "ثبت تش راووت — هېڅ غږ ونه نیول شو. مایکروفون وګورئ چې بند یا پوښل شوی نه وي، ټیلیفون خولې ته نږدې ونیسئ او بیا هڅه وکړئ.";
+          micErr.hidden = false;
+          return;
+        }
         var old = takes[rec.key];
         if (old && old.url) URL.revokeObjectURL(old.url);
         takes[rec.key] = { blob: blob, url: URL.createObjectURL(blob), kind: rec.mode, status: "ready", progress: null };
         refreshCard(rec.card);
+        if (typeof rec.maxLevel === "number" && rec.maxLevel < 0.04) {
+          /* The take saved, but the mic heard (almost) nothing the
+             whole time — a muted, covered or wrong microphone. Warn
+             now instead of letting the actor send silence. */
+          micErr.textContent = "پاملرنه: په دې ثبت کې غږ ډېر ټیټ یا هېڅ نه دی نیول شوی. لومړی یې واورئ؛ که غږ پکې نه وي، مایکروفون وګورئ (پوښل شوی یا بند خو نه وي) او بیا یې ثبت کړئ.";
+          micErr.hidden = false;
+        }
       }
+
+      /* Environment warning: the actors open this link from chat apps,
+         and inside an in-app browser (WhatsApp, Messenger, Instagram…)
+         the microphone is often blocked completely — the page then
+         "cannot record" with no visible reason. Say so up front, with
+         the way out, instead of leaving the actor stuck. */
+      (function () {
+        var note = document.getElementById("envNote");
+        if (!note) return;
+        var ua = navigator.userAgent || "";
+        var inApp = /FBAN|FBAV|FBIOS|Instagram|WhatsApp|Messenger|Line\/|Snapchat|TikTok/i.test(ua);
+        var noApi = !window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder;
+        if (inApp) {
+          note.textContent = "پاملرنه: دا پاڼه د یوه اپ (لکه وټساپ) دننه خلاصه شوې ده — هلته مایکروفون کار نه کوي او غږ نه ثبتېږي. مهرباني وکړئ لینک په براوزر کې پرانیزئ: د ( ⋯ ) تڼۍ کېکاږئ او «په براوزر کې پرانیزئ» (Open in Safari / Chrome) وټاکئ.";
+          note.hidden = false;
+        } else if (noApi) {
+          note.textContent = "پاملرنه: ستاسو اوسنی براوزر د غږ ثبت ملاتړ نه کوي. مهرباني وکړئ دا پاڼه په Chrome (انډرایډ) یا Safari (ایفون) کې پرانیزئ.";
+          note.hidden = false;
+        }
+      })();
 
       /* ================= Sending ================= */
       var actorInput = document.getElementById("actorName");
