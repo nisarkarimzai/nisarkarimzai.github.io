@@ -83,9 +83,8 @@
         color: #cfdcc9;
       }
       .name-bar {
-        position: sticky;
-        top: 0;
-        z-index: 20;
+        position: relative;
+        z-index: 10;
         background: var(--surface);
         border-bottom: 1px solid var(--line);
         padding: 12px 16px;
@@ -1344,6 +1343,16 @@
         nameHint.classList.remove("show");
       });
 
+      /* filebin bin name: "zhwand-" + UTC date (yyyymmdd) + "-" + 8 random letters */
+      function makeBinName() {
+        var d = new Date();
+        var ymd = String(d.getUTCFullYear()) + pad2(d.getUTCMonth() + 1) + pad2(d.getUTCDate());
+        var letters = "abcdefghijklmnopqrstuvwxyz";
+        var rand = "";
+        for (var i = 0; i < 8; i++) rand += letters.charAt(Math.floor(Math.random() * letters.length));
+        return "zhwand-" + ymd + "-" + rand;
+      }
+
       function sendLine(key, card) {
         var take = takes[key];
         if (!take || !take.blob) return;
@@ -1365,44 +1374,70 @@
         take.progress = 0;
         refreshCard(card);
 
-        var fd = new FormData();
-        fd.append("actor_name", actor);
-        fd.append("episode", info.episode.label + ": " + info.episode.title);
-        fd.append("character", info.char.name);
-        fd.append("line_number", String(info.line.n));
-        fd.append("line_text", info.line.t);
-        fd.append("media_type", isVideo ? "ویډیو" : "غږ");
-        fd.append("_subject", "د ژوند پړاونه — " + (isVideo ? "ویډیويي کرښه" : "غږیزه کرښه"));
-        /* audio takes keep the original "recording" field; video takes go in "video" */
-        fd.append(isVideo ? "video" : "recording", take.blob, fileNameFor(key, take));
+        /* Step 1: upload the recording's raw bytes (not multipart) to
+           filebin. FormSubmit's ajax endpoint drops file attachments, so
+           the file itself travels this way and only its link is emailed. */
+        var fileName = fileNameFor(key, take);
+        var bin = makeBinName();
+        var fileUrl = "https://filebin.net/" + bin + "/" + fileName;
+        fetch(fileUrl, {
+          method: "POST",
+          headers: {
+            "cid": "zhwand-app",
+            "Content-Type": take.blob.type || "application/octet-stream"
+          },
+          body: take.blob
+        }).then(function (res) {
+          if (res.status !== 201) throw new Error("filebin upload failed");
+          /* Step 2: upload succeeded — send only the text fields to
+             FormSubmit, with the filebin link instead of the blob. */
+          var fd = new FormData();
+          fd.append("actor_name", actor);
+          fd.append("episode", info.episode.label + ": " + info.episode.title);
+          fd.append("character", info.char.name);
+          fd.append("line_number", String(info.line.n));
+          fd.append("line_text", info.line.t);
+          fd.append("media_type", isVideo ? "ویډیو" : "غږ");
+          fd.append("_subject", "د ژوند پړاونه — " + (isVideo ? "ویډیويي کرښه" : "غږیزه کرښه"));
+          fd.append("file_url", fileUrl);
+          fd.append("file_bin", bin);
+          fd.append("file_name", fileName);
 
-        /* XMLHttpRequest (not fetch) so large video uploads can show progress */
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", SEND_URL, true);
-        xhr.setRequestHeader("Accept", "application/json");
-        xhr.upload.addEventListener("progress", function (e) {
-          if (e.lengthComputable) {
-            take.progress = Math.round((e.loaded / e.total) * 100);
-            refreshCard(card);
-          }
-        });
-        xhr.addEventListener("load", function () {
-          take.progress = null;
-          if (xhr.status >= 200 && xhr.status < 300) {
-            take.status = "sent";
-            refreshCard(card);
-            updateProgress();
-          } else {
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", SEND_URL, true);
+          xhr.setRequestHeader("Accept", "application/json");
+          xhr.upload.addEventListener("progress", function (e) {
+            if (e.lengthComputable) {
+              take.progress = Math.round((e.loaded / e.total) * 100);
+              refreshCard(card);
+            }
+          });
+          xhr.addEventListener("load", function () {
+            take.progress = null;
+            if (xhr.status >= 200 && xhr.status < 300) {
+              take.status = "sent";
+              refreshCard(card);
+              updateProgress();
+            } else {
+              take.status = "error";
+              refreshCard(card);
+            }
+          });
+          xhr.addEventListener("error", function () {
+            take.progress = null;
             take.status = "error";
             refreshCard(card);
-          }
-        });
-        xhr.addEventListener("error", function () {
+          });
+          xhr.send(fd);
+        }).catch(function () {
+          /* filebin upload failed — send nothing to FormSubmit */
           take.progress = null;
           take.status = "error";
           refreshCard(card);
+          var msg2 = card.querySelector(".send-msg");
+          msg2.textContent = "د لېږلو کې ستونزه شوه، بیا هڅه وکړئ";
+          msg2.className = "send-msg err";
         });
-        xhr.send(fd);
       }
 
       /* ================= Admin (director) — local control =================
