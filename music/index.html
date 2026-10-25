@@ -74,6 +74,7 @@
       <option value="short">لنډې لومړی</option>
     </select>
   </div>
+<button id="installBtn" style="margin-top:12px;width:100%;background:var(--gold);color:#23180a;border:none;border-radius:10px;padding:12px;font-size:16px;font-weight:700;cursor:pointer">ایپ په موبایل کې ولګوه (ډاونلوډ)</button>
 </header>
 
 <nav class="chips" id="chips">
@@ -387,7 +388,7 @@ function renderNewArtists(){
 }
 let deferredPrompt=null;
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferredPrompt=e; });
-$("#installBtn").addEventListener("click", async ()=>{
+const _ib=$("#installBtn"); if(_ib) _ib.addEventListener("click", async ()=>{
   if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; }
   else alert("د ایپ لګولو لپاره: په انډرایډ کې د براوزر مینو (درې ټکي) پرانیسه او «Install app / Add to Home screen» ووهه. په ایفون کې Share تڼۍ ووهه، بیا «Add to Home Screen».");
 });
