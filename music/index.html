@@ -93,6 +93,13 @@
     <div class="albums" id="artists"></div>
   </section>
 
+
+  <section id="newArtistsBox">
+    <h2>د نویو سندرغاړو البمونه</h2>
+    <div style="color:var(--dim);font-size:13.5px;line-height:1.9;margin-bottom:10px">د هر سندرغاړي البم پاڼه چمتو ده — اوس یې سندرې د دوی په رسمي یوټیوب کې اورېدلای شې، او کله چې اجازه یا فایلونه ترلاسه شي، همدلته به یې په ایپ کې خپریږي:</div>
+    <div class="albums" id="newArtists"></div>
+  </section>
+
   <section id="viralBox">
     <h2>مشهورې او وایرل سندرې</h2>
     <div style="color:var(--dim);font-size:13.5px;line-height:1.9;margin-bottom:10px">د مشهورو سندرغاړو سندرې د هغوی په خپلو رسمي یوټیوب پاڼو کې دي — نوم ووهه، هلته یې واوره:</div>
@@ -237,7 +244,7 @@ function render(){
     d.addEventListener("click",()=>{ filter="album:"+name; document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on")); $("#listTitle").textContent="البم: "+name; render(); });
     ab.appendChild(d);
   });
-  renderArtists();
+  renderArtists(); renderNewArtists();
   /* recent */
   const rb=$("#recentList"); rb.innerHTML="";
   const rl=recent.map(id=>allSongs().find(s=>s.id===id)).filter(Boolean).slice(0,5);
@@ -353,6 +360,37 @@ function renderArtists(){
   });
 }
 $("#playAll").addEventListener("click",()=>{ const v=visible(); if(v.length){ queue=v; playAt(0,true); } });
+
+
+const NEW_ARTISTS = [
+  {name:"ګل پاڼه", tag:"پاپ"},
+  {name:"کرن خان", tag:"عصري پاپ"},
+  {name:"زیک آفریدي", tag:"پاپ"},
+  {name:"رحیم شاه", tag:"پاپ"},
+  {name:"هارون باچا", tag:"ولسي"},
+  {name:"سردار علي ټکر", tag:"ولسي"},
+  {name:"بختیار خټک", tag:"کلاسیک پاپ"},
+  {name:"همایون خان", tag:"پاپ"},
+  {name:"شاه سوار", tag:"ولسي"},
+  {name:"زرڅانګه", tag:"ولسي"}
+];
+function renderNewArtists(){
+  const vb=$("#newArtists"); if(!vb) return; vb.innerHTML="";
+  NEW_ARTISTS.forEach(a=>{
+    const el=document.createElement("a"); el.className="album"; el.style.textDecoration="none"; el.style.color="var(--txt)";
+    el.href="https://www.youtube.com/results?search_query="+encodeURIComponent(a.name+" البم سندرې");
+    el.target="_blank"; el.rel="noopener";
+    el.innerHTML="<b></b><span>"+a.tag+" — البم په یوټیوب کې</span>";
+    el.querySelector("b").textContent=a.name;
+    vb.appendChild(el);
+  });
+}
+let deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferredPrompt=e; });
+$("#installBtn").addEventListener("click", async ()=>{
+  if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; }
+  else alert("د ایپ لګولو لپاره: په انډرایډ کې د براوزر مینو (درې ټکي) پرانیسه او «Install app / Add to Home screen» ووهه. په ایفون کې Share تڼۍ ووهه، بیا «Add to Home Screen».");
+});
 
 loadUploads(); render();
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
