@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ps" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d3b33">
+<title>پښتو میوزیک</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root{--bg:#0b1f1b;--bg2:#0d3b33;--card:#123f36;--card2:#175144;--gold:#d9a441;--txt:#f3efe6;--dim:#a9bcb5;--line:#1e5a4d;--accent:#e2574c}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--txt);font-family:"Segoe UI",Tahoma,Arial,sans-serif}
+  body{padding-bottom:190px}
+  header{background:linear-gradient(160deg,var(--bg2),#082720);padding:22px 16px 14px;position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line)}
+  h1{font-size:26px;color:var(--gold);letter-spacing:.2px}
+  .sub{color:var(--dim);font-size:13px;margin-top:3px}
+  .search{margin-top:12px;display:flex;gap:8px}
+  .search input{flex:1;background:#0a2c25;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px;font-size:15px}
+  .search select{background:#0a2c25;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 6px;font-size:14px}
+  nav.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 2px;scrollbar-width:none}
+  nav.chips::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap;background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:999px;padding:8px 14px;font-size:14px;cursor:pointer}
+  .chip.on{background:var(--gold);color:#23180a;border-color:var(--gold);font-weight:700}
+  main{padding:8px 16px}
+  h2{font-size:18px;margin:18px 0 10px;color:var(--gold)}
+  .albums{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .album{background:linear-gradient(150deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:16px 12px;cursor:pointer}
+  .album b{font-size:16px;display:block}
+  .album span{color:var(--dim);font-size:13px}
+  .song{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+  .song.playing{border-color:var(--gold)}
+  .song .no{width:34px;height:34px;border-radius:50%;background:var(--bg2);color:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+  .song .meta{flex:1;min-width:0}
+  .song .t{font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .song .a{color:var(--dim);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .badge{font-size:11px;color:var(--gold);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+  .fav{background:none;border:none;cursor:pointer;padding:6px;flex:none}
+  .fav svg{width:22px;height:22px;fill:none;stroke:var(--dim);stroke-width:2}
+  .fav.on svg{fill:var(--accent);stroke:var(--accent)}
+  .del{background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;padding:4px;flex:none}
+  .empty{color:var(--dim);text-align:center;padding:22px 8px;font-size:14px;line-height:1.9}
+  .upload{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:14px;margin-top:6px}
+  .upload input[type=text]{width:100%;background:#0a2c25;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:9px 10px;font-size:14px;margin:8px 0}
+  .btn{background:var(--gold);color:#23180a;border:none;border-radius:10px;padding:11px 16px;font-size:15px;font-weight:700;cursor:pointer;width:100%}
+  .btn.ghost{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+  footer.player{position:fixed;bottom:0;right:0;left:0;background:#082720f2;backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));z-index:30}
+  .now{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .now small{display:block;color:var(--dim);font-weight:400;font-size:12px}
+  .seek{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--dim)}
+  input[type=range]{flex:1;accent-color:var(--gold);height:28px}
+  .controls{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+  .cbtn{background:none;border:none;color:var(--txt);cursor:pointer;padding:8px;border-radius:50%}
+  .cbtn svg{width:24px;height:24px;fill:var(--txt);display:block}
+  .cbtn.off svg{fill:#5d7a72}
+  .cbtn.play{background:var(--gold);width:54px;height:54px;display:flex;align-items:center;justify-content:center}
+  .cbtn.play svg{fill:#23180a;width:28px;height:28px}
+  .mini{font-size:12.5px;color:var(--dim);background:none;border:1px solid var(--line);border-radius:8px;padding:6px 9px;cursor:pointer}
+  .mini.on{color:var(--gold);border-color:var(--gold)}
+  .row2{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .note{color:var(--dim);font-size:12.5px;text-align:center;padding:10px;line-height:1.9}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>پښتو میوزیک</h1>
+  <div class="sub">نوي او زړې سندرې — ستا خپل کتابتون</div>
+  <div class="search">
+    <input id="q" type="search" placeholder="سندره، سندرغاړی یا البم ولټوه...">
+    <select id="sort">
+      <option value="name">نوم</option>
+      <option value="long">اوږدې لومړی</option>
+      <option value="short">لنډې لومړی</option>
+    </select>
+  </div>
+</header>
+
+<nav class="chips" id="chips">
+  <button class="chip on" data-f="all">ټولې سندرې</button>
+  <button class="chip" data-f="old">زړې / کلاسیک</button>
+  <button class="chip" data-f="new">نوي</button>
+  <button class="chip" data-f="fav">خوښې مې</button>
+  <button class="chip" data-f="recent">اوس اوس اورېدلې</button>
+</nav>
+
+<main>
+  <section id="albumsBox">
+    <h2>البمونه</h2>
+    <div class="albums" id="albums"></div>
+  </section>
+
+  <section id="recentBox">
+    <h2>اوس اوس اورېدلې</h2>
+    <div id="recentList"></div>
+  </section>
+
+  <h2 id="listTitle">سندرې</h2>
+  <div id="list"></div>
+
+  <h2>زما سندرې ور زیاتې کړه</h2>
+  <div class="upload">
+    <div style="font-size:14px;color:var(--dim);line-height:1.9">د خپل موبایل څخه غږیز فایلونه وټاکه — په همدې موبایل کې خوندي کیږي، له انټرنېټ پرته هم چلیږي او کیفیت یې هماغسې پاتې کیږي لکه فایل چې دی.</div>
+    <input id="albumName" type="text" placeholder="د البم نوم (لکه: زما خوښې سندرې)">
+    <input id="files" type="file" accept="audio/*" multiple class="hidden">
+    <button class="btn" id="pick">فایلونه وټاکه</button>
+  </div>
+  <div class="note">لارښوونه: سندره په بېګراونډ کې هم چلیږي — سکرین بند کړه یا بل ایپ پرانیسه، سندره روانه وي. د سکرین په قلف کې هم د درولو او بدلولو تڼۍ کار کوي.</div>
+</main>
+
+<footer class="player">
+  <div class="now" id="nowTitle">هېڅ سندره نه ده ټاکل شوې<small id="nowArtist">له نوملړ څخه یوه سندره وټاکه</small></div>
+  <div class="seek">
+    <span id="cur">0:00</span>
+    <input id="seek" type="range" min="0" max="1000" value="0">
+    <span id="dur">0:00</span>
+  </div>
+  <div class="controls">
+    <button class="cbtn off" id="shuffle" title="ګډول"><svg viewBox="0 0 24 24"><path d="M10.6 5.6A3 3 0 0 0 8 4H4v2.5h4c.5 0 1 .3 1.2.7L12 12l-2.8 4.8c-.2.4-.7.7-1.2.7H4V20h4c1.2 0 2.3-.6 2.9-1.6L13.5 14l2.6 4.4c.2.4.7.6 1.2.6H16v2.5l4-3-4-3V18h1.3c1.2 0 2.3-.6 2.9-1.6L21 14h-2.5l-1.6 2.7c-.2.4-.7.6-1.2.6h-2.3L12 12l1.4-2.3h2.3c.5 0 1-.3 1.2-.7L18.5 6.5H20L21 4h-2.5l-.8 1.4A3 3 0 0 0 15.3 4H16V1.5l-4 3 4 3V5h-.7c-.5 0-1 .3-1.2.7L11.5 10 10.6 5.6z" transform="scale(0.92)"/></svg></button>
+    <button class="cbtn" id="prev" title="مخکې"><svg viewBox="0 0 24 24"><path d="M19 20 9.5 12 19 4v16zM7 5H5v14h2z"/></svg></button>
+    <button class="cbtn play" id="play" title="چالان / ودروه"><svg id="playIco" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+    <button class="cbtn" id="next" title="بل"><svg viewBox="0 0 24 24"><path d="m5 4 9.5 8L5 20V4zm12 1h2v14h-2z"/></svg></button>
+    <button class="cbtn off" id="repeat" title="تکرار"><svg viewBox="0 0 24 24"><path d="M17 2.5 21 6.5l-4 4V8H8a3 3 0 0 0-3 3v1H3v-1a5 5 0 0 1 5-5h9V2.5zM7 21.5 3 17.5l4-4V16h9a3 3 0 0 0 3-3v-1h2v1a5 5 0 0 1-5 5H7v3.5z"/></svg></button>
+  </div>
+  <div class="row2">
+    <button class="mini" id="repMode">تکرار: بند</button>
+    <button class="mini" id="speed">سرعت: ۱</button>
+    <button class="mini" id="timer">د خوب مهال: بند</button>
+    <span class="mini" style="border:none">غږ</span>
+    <input id="vol" type="range" min="0" max="100" value="90" style="max-width:110px">
+  </div>
+</footer>
+
+<audio id="audio" preload="metadata"></audio>
+
+<script>
+"use strict";
+/* ---------- catalog: bundled songs (his own project music files) ---------- */
+const BUILTIN = [
+  {id:"b1", title:"انار انار", artist:"استاد شېدا — رباب", album:"رباب", era:"old", src:"tracks/anar_anar.mp3", dur:255, kbps:56},
+  {id:"b2", title:"از شوقِ ګل", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/az_shawq_e_gul.mp3", dur:328, kbps:56},
+  {id:"b3", title:"برو ای شوخ", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/beraw_ay_shokh.mp3", dur:589, kbps:56},
+  {id:"b4", title:"ګل که با بلبل", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/gul_ke_ba_bulbul.mp3", dur:801, kbps:56},
+  {id:"b5", title:"قافلۀ عمر", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/qafela_e_omr.mp3", dur:344, kbps:56},
+  {id:"b6", title:"ذوقِ حرم", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/zawq_haram.mp3", dur:631, kbps:56}
+];
+/* ---------- state ---------- */
+const $ = s => document.querySelector(s);
+const audio = $("#audio");
+let uploads = [];           // from IndexedDB: {id,title,artist,album,era,blob,dur}
+let queue = [];             // current visible list (song objects with .src or .url)
+let idx = -1, filter = "all", query = "", sortBy = "name";
+let shuffle = false, repeat = 0; // 0 off, 1 all, 2 one
+let sleepTimer = null;
+const favs = new Set(JSON.parse(localStorage.getItem("pm_favs") || "[]"));
+const recent = JSON.parse(localStorage.getItem("pm_recent") || "[]");
+
+function saveFavs(){ localStorage.setItem("pm_favs", JSON.stringify([...favs])); }
+function fmt(s){ s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function allSongs(){ return [...BUILTIN, ...uploads]; }
+function songUrl(s){ return s.src ? s.src : s.url; }
+
+/* ---------- IndexedDB for uploaded files ---------- */
+function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open("pashtoMusic",1);
+  r.onupgradeneeded=()=>{ r.result.createObjectStore("songs",{keyPath:"id",autoIncrement:true}); };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function loadUploads(){ try{ const db=await idb();
+  const items=await new Promise((res,rej)=>{ const q=db.transaction("songs").objectStore("songs").getAll(); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); });
+  uploads = items.map(it=>({id:"u"+it.id, dbId:it.id, title:it.title, artist:"زما ټولګه", album:it.album||"زما سندرې", era:"new", blob:it.blob, url:URL.createObjectURL(it.blob), dur:it.dur||0}));
+ }catch(e){ uploads=[]; } render(); }
+async function addUpload(file, album){
+  const db=await idb();
+  const rec={title:file.name.replace(/\.[^.]+$/,""), album:album||"زما سندرې", blob:file, dur:0};
+  const id=await new Promise((res,rej)=>{ const q=db.transaction("songs","readwrite").objectStore("songs").add(rec); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); });
+  uploads.push({id:"u"+id, dbId:id, title:rec.title, artist:"زما ټولګه", album:rec.album, era:"new", blob:file, url:URL.createObjectURL(file), dur:0});
+}
+async function delUpload(s){ const db=await idb();
+  await new Promise((res,rej)=>{ const q=db.transaction("songs","readwrite").objectStore("songs").delete(s.dbId); q.onsuccess=()=>res(); q.onerror=()=>rej(q.error); });
+  uploads = uploads.filter(u=>u.id!==s.id); favs.delete(s.id); saveFavs(); render();
+}
+
+/* ---------- rendering ---------- */
+function visible(){
+  let list = allSongs();
+  if(filter==="old") list=list.filter(s=>s.era==="old");
+  if(filter==="new") list=list.filter(s=>s.era==="new");
+  if(filter==="fav") list=list.filter(s=>favs.has(s.id));
+  if(filter==="recent") list=recent.map(id=>list.find(s=>s.id===id)).filter(Boolean);
+  if(filter.startsWith("album:")) list=list.filter(s=>s.album===filter.slice(6));
+  if(query) list=list.filter(s=>(s.title+" "+s.artist+" "+s.album).includes(query));
+  if(sortBy==="name") list.sort((a,b)=>a.title.localeCompare(b.title,"ps"));
+  if(sortBy==="long") list.sort((a,b)=>(b.dur||0)-(a.dur||0));
+  if(sortBy==="short") list.sort((a,b)=>(a.dur||0)-(b.dur||0));
+  return list;
+}
+function heartSVG(){ return '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.9-10-9.3C.4 8.6 2.3 5 5.7 5c2 0 3.4 1.1 4.3 2.4h4C15 6.1 16.4 5 18.4 5c3.4 0 5.3 3.6 3.7 6.7C19.5 16.1 12 21 12 21z" transform="scale(0.92)"/></svg>'; }
+function render(){
+  const list = visible(); queue = list;
+  const box = $("#list"); box.innerHTML = "";
+  if(!list.length){ box.innerHTML = '<div class="empty">دلته سندره نشته.<br>لاندې د فایلونو له ټاکلو سره خپلې سندرې ور زیاتې کړه.</div>'; }
+  list.forEach((s,i)=>{
+    const d=document.createElement("div"); d.className="song"+(idx>=0&&queue[idx]&&queue[idx].id===s.id&&!audio.paused?" playing":"");
+    d.innerHTML = '<div class="no">'+(i+1)+'</div><div class="meta"><div class="t"></div><div class="a"></div></div>'
+      + (s.kbps?'<span class="badge">'+s.kbps+' kbps</span>':'<span class="badge">زما فایل</span>')
+      + '<span class="badge">'+fmt(s.dur)+'</span>'
+      + '<button class="fav'+(favs.has(s.id)?" on":"")+'" aria-label="خوښه">'+heartSVG()+'</button>'
+      + (s.dbId?'<button class="del" aria-label="ړنګول">×</button>':"");
+    d.querySelector(".t").textContent=s.title;
+    d.querySelector(".a").textContent=s.artist+" — "+s.album;
+    d.addEventListener("click",e=>{ if(e.target.closest(".fav")||e.target.closest(".del"))return; playAt(i,true); });
+    d.querySelector(".fav").addEventListener("click",()=>{ favs.has(s.id)?favs.delete(s.id):favs.add(s.id); saveFavs(); render(); });
+    const del=d.querySelector(".del"); if(del) del.addEventListener("click",()=>{ if(confirm("دا سندره ړنګول غواړې؟")) delUpload(s); });
+    box.appendChild(d);
+  });
+  /* albums */
+  const counts={}; allSongs().forEach(s=>{ counts[s.album]=(counts[s.album]||0)+1; });
+  const ab=$("#albums"); ab.innerHTML="";
+  Object.keys(counts).forEach(name=>{
+    const d=document.createElement("div"); d.className="album";
+    d.innerHTML="<b></b><span>"+counts[name]+" سندرې</span>";
+    d.querySelector("b").textContent=name;
+    d.addEventListener("click",()=>{ filter="album:"+name; document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on")); $("#listTitle").textContent="البم: "+name; render(); });
+    ab.appendChild(d);
+  });
+  /* recent */
+  const rb=$("#recentList"); rb.innerHTML="";
+  const rl=recent.map(id=>allSongs().find(s=>s.id===id)).filter(Boolean).slice(0,5);
+  $("#recentBox").style.display = rl.length? "block":"none";
+  rl.forEach(s=>{ const d=document.createElement("div"); d.className="song";
+    d.innerHTML='<div class="no">♪</div><div class="meta"><div class="t"></div><div class="a"></div></div>';
+    d.querySelector(".t").textContent=s.title; d.querySelector(".a").textContent=s.artist;
+    d.addEventListener("click",()=>{ const v=visible(); const i=v.findIndex(x=>x.id===s.id); if(i>=0) playAt(i,true); else { queue=[s]; playAt(0,true);} });
+    rb.appendChild(d); });
+}
+
+/* ---------- playback ---------- */
+function playAt(i,user){
+  if(i<0||i>=queue.length) return;
+  idx=i; const s=queue[i];
+  audio.src=songUrl(s); audio.playbackRate=parseFloat($("#speed").dataset.v||"1");
+  audio.play().catch(()=>{});
+  $("#nowTitle").textContent=s.title;
+  $("#nowArtist").textContent=s.artist+" — "+s.album;
+  const r=[s.id,...recent.filter(x=>x!==s.id)].slice(0,12);
+  recent.length=0; recent.push(...r); localStorage.setItem("pm_recent",JSON.stringify(recent));
+  if("mediaSession" in navigator){
+    navigator.mediaSession.metadata=new MediaMetadata({title:s.title, artist:s.artist, album:s.album});
+    navigator.mediaSession.playbackState="playing";
+  }
+  render();
+}
+function step(d){
+  if(!queue.length) return;
+  if(shuffle && queue.length>1){ let n; do{ n=Math.floor(Math.random()*queue.length); }while(n===idx); playAt(n,true); return; }
+  let n=idx+d; if(n<0)n=queue.length-1; if(n>=queue.length)n=0; playAt(n,true);
+}
+audio.addEventListener("ended",()=>{
+  if(repeat===2){ audio.currentTime=0; audio.play(); return; }
+  if(idx<queue.length-1) step(1);
+  else if(repeat===1) playAt(0,true);
+});
+audio.addEventListener("timeupdate",()=>{
+  if(audio.duration){ $("#seek").value=Math.round(audio.currentTime/audio.duration*1000); }
+  $("#cur").textContent=fmt(audio.currentTime); $("#dur").textContent=fmt(audio.duration);
+});
+audio.addEventListener("loadedmetadata",()=>{ $("#dur").textContent=fmt(audio.duration); });
+audio.addEventListener("play",()=>{ $("#playIco").innerHTML='<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>'; if("mediaSession" in navigator) navigator.mediaSession.playbackState="playing"; render(); });
+audio.addEventListener("pause",()=>{ $("#playIco").innerHTML='<path d="M8 5v14l11-7z"/>'; if("mediaSession" in navigator) navigator.mediaSession.playbackState="paused"; render(); });
+$("#seek").addEventListener("input",e=>{ if(audio.duration) audio.currentTime=e.target.value/1000*audio.duration; });
+$("#play").addEventListener("click",()=>{ if(idx<0){ if(queue.length) playAt(0,true); return; } audio.paused?audio.play():audio.pause(); });
+$("#next").addEventListener("click",()=>step(1));
+$("#prev").addEventListener("click",()=>step(-1));
+$("#shuffle").addEventListener("click",e=>{ shuffle=!shuffle; e.currentTarget.classList.toggle("off",!shuffle); });
+$("#repeat").addEventListener("click",()=>{
+  repeat=(repeat+1)%3;
+  $("#repMode").textContent="تکرار: "+(repeat===0?"بند":repeat===1?"ټولې":"یوه");
+  $("#repMode").classList.toggle("on",repeat>0);
+  $("#repeat").classList.toggle("off",repeat===0);
+});
+$("#repMode").addEventListener("click",()=>$("#repeat").click());
+$("#speed").addEventListener("click",()=>{
+  const opts=["0.75","1","1.25","1.5"]; const cur=$("#speed").dataset.v||"1";
+  const nx=opts[(opts.indexOf(cur)+1)%opts.length];
+  $("#speed").dataset.v=nx; $("#speed").textContent="سرعت: "+nx; audio.playbackRate=parseFloat(nx);
+});
+$("#timer").addEventListener("click",()=>{
+  const opts=[0,15,30,60]; const cur=parseInt($("#timer").dataset.v||"0");
+  const nx=opts[(opts.indexOf(cur)+1)%opts.length];
+  $("#timer").dataset.v=nx;
+  $("#timer").textContent="د خوب مهال: "+(nx?nx+" دقیقې":"بند");
+  $("#timer").classList.toggle("on",nx>0);
+  if(sleepTimer) clearTimeout(sleepTimer);
+  if(nx) sleepTimer=setTimeout(()=>{ audio.pause(); $("#timer").textContent="د خوب مهال: بند"; $("#timer").dataset.v="0"; }, nx*60000);
+});
+$("#vol").addEventListener("input",e=>{ audio.volume=e.target.value/100; });
+audio.volume=0.9;
+if("mediaSession" in navigator){
+  navigator.mediaSession.setActionHandler("play",()=>audio.play());
+  navigator.mediaSession.setActionHandler("pause",()=>audio.pause());
+  navigator.mediaSession.setActionHandler("previoustrack",()=>step(-1));
+  navigator.mediaSession.setActionHandler("nexttrack",()=>step(1));
+  navigator.mediaSession.setActionHandler("seekto",e=>{ if(e.seekTime!=null) audio.currentTime=e.seekTime; });
+}
+/* ---------- filters / search / upload ---------- */
+document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
+  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on")); c.classList.add("on");
+  filter=c.dataset.f; $("#listTitle").textContent = filter==="fav"?"خوښې مې":filter==="recent"?"اوس اوس اورېدلې":"سندرې"; render();
+}));
+$("#q").addEventListener("input",e=>{ query=e.target.value.trim(); render(); });
+$("#sort").addEventListener("change",e=>{ sortBy=e.target.value; render(); });
+$("#pick").addEventListener("click",()=>$("#files").click());
+$("#files").addEventListener("change",async e=>{
+  const album=$("#albumName").value.trim();
+  for(const f of e.target.files){ await addUpload(f,album); }
+  e.target.value=""; filter="new"; render();
+});
+loadUploads(); render();
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
