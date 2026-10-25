@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d3b33">
-<title>پښتو میوزیک</title>
+<title>پښتو انسټیټیوټ — میوزیک</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
@@ -64,8 +64,8 @@
 </head>
 <body>
 <header>
-  <h1>پښتو میوزیک</h1>
-  <div class="sub">نوي او زړې سندرې — ستا خپل کتابتون</div>
+  <h1>پښتو انسټیټیوټ — میوزیک</h1>
+  <div class="sub">د پښتو انسټیټیوټ میوزیک کتابتون — د ټولو پښتنو لپاره وړیا</div>
   <div class="search">
     <input id="q" type="search" placeholder="سندره، سندرغاړی یا البم ولټوه...">
     <select id="sort">
@@ -85,6 +85,20 @@
 </nav>
 
 <main>
+
+  <button class="btn" id="playAll" style="margin-top:14px">ټولې سندرې چالان کړه</button>
+
+  <section id="artistsBox">
+    <h2>سندرغاړي</h2>
+    <div class="albums" id="artists"></div>
+  </section>
+
+  <section id="viralBox">
+    <h2>مشهورې او وایرل سندرې</h2>
+    <div style="color:var(--dim);font-size:13.5px;line-height:1.9;margin-bottom:10px">د مشهورو سندرغاړو سندرې د هغوی په خپلو رسمي یوټیوب پاڼو کې دي — نوم ووهه، هلته یې واوره:</div>
+    <div class="albums" id="viral"></div>
+  </section>
+
   <section id="albumsBox">
     <h2>البمونه</h2>
     <div class="albums" id="albums"></div>
@@ -187,6 +201,7 @@ function visible(){
   if(filter==="fav") list=list.filter(s=>favs.has(s.id));
   if(filter==="recent") list=recent.map(id=>list.find(s=>s.id===id)).filter(Boolean);
   if(filter.startsWith("album:")) list=list.filter(s=>s.album===filter.slice(6));
+  if(filter.startsWith("artist:")) list=list.filter(s=>s.artist===filter.slice(7));
   if(query) list=list.filter(s=>(s.title+" "+s.artist+" "+s.album).includes(query));
   if(sortBy==="name") list.sort((a,b)=>a.title.localeCompare(b.title,"ps"));
   if(sortBy==="long") list.sort((a,b)=>(b.dur||0)-(a.dur||0));
@@ -222,6 +237,7 @@ function render(){
     d.addEventListener("click",()=>{ filter="album:"+name; document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on")); $("#listTitle").textContent="البم: "+name; render(); });
     ab.appendChild(d);
   });
+  renderArtists();
   /* recent */
   const rb=$("#recentList"); rb.innerHTML="";
   const rl=recent.map(id=>allSongs().find(s=>s.id===id)).filter(Boolean).slice(0,5);
@@ -314,6 +330,30 @@ $("#files").addEventListener("change",async e=>{
   for(const f of e.target.files){ await addUpload(f,album); }
   e.target.value=""; filter="new"; render();
 });
+
+const VIRAL = ["احمد ظاهر","ناشناس","فرهاد دریا","ګل زمان","سردار علي ټکر","هارون باچا","بخت زمېنه","نغمه"];
+function renderArtists(){
+  const counts={}; allSongs().forEach(s=>{ counts[s.artist]=(counts[s.artist]||0)+1; });
+  const box=$("#artists"); box.innerHTML="";
+  Object.keys(counts).forEach(name=>{
+    const d=document.createElement("div"); d.className="album";
+    d.innerHTML="<b></b><span>"+counts[name]+" سندرې</span>";
+    d.querySelector("b").textContent=name;
+    d.addEventListener("click",()=>{ filter="artist:"+name; $("#listTitle").textContent="سندرغاړی: "+name; render(); window.scrollTo({top:document.querySelector("#listTitle").offsetTop-140,behavior:"smooth"}); });
+    box.appendChild(d);
+  });
+  const vb=$("#viral"); vb.innerHTML="";
+  VIRAL.forEach(name=>{
+    const a=document.createElement("a"); a.className="album"; a.style.textDecoration="none"; a.style.color="var(--txt)";
+    a.href="https://www.youtube.com/results?search_query="+encodeURIComponent(name+" سندرې");
+    a.target="_blank"; a.rel="noopener";
+    a.innerHTML="<b></b><span>په یوټیوب کې یې واوره</span>";
+    a.querySelector("b").textContent=name;
+    vb.appendChild(a);
+  });
+}
+$("#playAll").addEventListener("click",()=>{ const v=visible(); if(v.length){ queue=v; playAt(0,true); } });
+
 loadUploads(); render();
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
