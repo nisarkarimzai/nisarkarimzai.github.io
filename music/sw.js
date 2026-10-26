@@ -1,4 +1,4 @@
-const CACHE = "pashto-music-v4";
+const CACHE = "pashto-music-v5";
 const CORE = ["./", "./index.html", "./manifest.json", "./icon.svg",
   "./tracks/anar_anar.mp3", "./tracks/az_shawq_e_gul.mp3", "./tracks/beraw_ay_shokh.mp3",
   "./tracks/gul_ke_ba_bulbul.mp3", "./tracks/qafela_e_omr.mp3", "./tracks/zawq_haram.mp3"];

@@ -128,6 +128,16 @@
     <button class="btn" id="pick">فایلونه وټاکه</button>
   </div>
   <div class="note">لارښوونه: سندره په بېګراونډ کې هم چلیږي — سکرین بند کړه یا بل ایپ پرانیسه، سندره روانه وي. د سکرین په قلف کې هم د درولو او بدلولو تڼۍ کار کوي.</div>
+
+<div id="albumView" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:14px">
+  <button id="avBack" style="background:var(--bg2);color:var(--gold);border:1px solid var(--line);border-radius:10px;padding:9px 16px;font-size:15px;cursor:pointer">بېرته</button>
+  <h2 id="avTitle" style="margin:12px 0 8px"></h2>
+  <div style="position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000">
+    <iframe id="avFrame" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen title="video"></iframe>
+  </div>
+  <div id="avList" style="margin-top:10px"></div>
+  <div style="color:var(--dim);font-size:12.5px;margin-top:10px">ویډیو د یوټیوب له رسمي پلېیر څخه چلیږي — حق یې د سندرغاړي دی. <a id="avMore" href="#" target="_blank" rel="noopener" style="color:var(--gold)">د دې سندرغاړي نورې سندرې په یوټیوب کې</a></div>
+</div>
 </main>
 
 <footer class="player">
@@ -246,6 +256,7 @@ function render(){
     ab.appendChild(d);
   });
   renderArtists(); renderNewArtists();
+  wireArtistCards($('#newArtists')); wireArtistCards($('#viral'));
   /* recent */
   const rb=$("#recentList"); rb.innerHTML="";
   const rl=recent.map(id=>allSongs().find(s=>s.id===id)).filter(Boolean).slice(0,5);
@@ -393,7 +404,39 @@ const _ib=$("#installBtn"); if(_ib) _ib.addEventListener("click", async ()=>{
   else alert("د ایپ لګولو لپاره: په انډرایډ کې د براوزر مینو (درې ټکي) پرانیسه او «Install app / Add to Home screen» ووهه. په ایفون کې Share تڼۍ ووهه، بیا «Add to Home Screen».");
 });
 
+
+const ARTIST_VIDEOS = {"ګل پاڼه": [{"id": "rBcP024h1Mo", "t": "Gul Panra — Meherban", "ch": "PB Studio Music"}, {"id": "ecXRC9GTQSI", "t": "Gul Panra — Tappy Ufff Allah", "ch": "PB Studio Music"}], "کرن خان": [{"id": "6eLxSJApGLg", "t": "Karan Khan — Da Meeny Mazhab", "ch": "Karan Khan"}, {"id": "EDRHLHBSRSg", "t": "Karan Khan — Nan Ye Rata Dasy", "ch": "Karan Khan"}], "زیک آفریدي": [{"id": "qIy6f2Iiq6Y", "t": "Zeek Afridi — Bibi Shireenay", "ch": "No Limit Communication"}, {"id": "YuhWyJcl2bk", "t": "Zeek Afridi & Gul Panra — Gul Dana", "ch": "No Limit Communication"}], "رحیم شاه": [{"id": "RTXqgQscogI", "t": "Rahim Shah — Palwashay", "ch": "Rahim Shah Official"}, {"id": "JiJ2doiJLVQ", "t": "Rahim Shah — Pehle To Kabhi Kabhi Gham Tha", "ch": "Oriental Star Agencies"}], "هارون باچا": [{"id": "xlfEIUVcuH4", "t": "Haroon Bacha — Stergey Ghazal", "ch": "Haroon Bacha"}, {"id": "OcDr-CXB9Ic", "t": "Haroon Bacha — Ghwag Ghwag Wama (Live)", "ch": "Janan Studio"}], "سردار علي ټکر": [{"id": "PxSEn4W_jN8", "t": "Sardar Ali Takkar — Chi Pa Ma Mayin Di", "ch": "Star CDs Music"}, {"id": "uxE5DaIu3kU", "t": "Sardar Ali Takkar — Mula Aw Ghani", "ch": "Sardar Ali Takkar"}], "بختیار خټک": [{"id": "a7CRqeC6HkY", "t": "Bakhtiar Khattak — Mazy La Zee", "ch": "HUNAR TV Official"}, {"id": "7Ft7p4ZHnAs", "t": "Bakhtiar Khattak — Halak Naray Chenar De", "ch": "Barbud Pashto"}], "همایون خان": [{"id": "BNtB6Pc_U3Q", "t": "Hamayoon Khan — Tobay Oobasam (Tapay)", "ch": "Hamayoon Khan Official"}, {"id": "etr9Lb6ugvU", "t": "Hamayoon Khan — Ro Ro Raza", "ch": "Spice Media"}], "شاه سوار": [{"id": "cryr8crMORE", "t": "Shahsawar & Nazia Iqbal — Pashto Songs 2018", "ch": "PB Studio Music"}, {"id": "7fljvwJVJ_c", "t": "Shahsawar & Gul Panra — Khoboona Mi Rangeen Shu", "ch": "Musafar Music"}], "زرڅانګه": [{"id": "QQgauitywpk", "t": "Madam Zarsanga — Arman", "ch": "No Limit Communication"}, {"id": "ewTOUOMrol4", "t": "Zarsanga & Qamar Gula", "ch": "Muhammad Bashir"}], "احمد ظاهر": [{"id": "s7uRiqXpLnA", "t": "Ahmad Zahir — Baaz Aamadi", "ch": "Ahmad Zahir"}, {"id": "MIoHJw25uSo", "t": "Ahmad Zahir — Khuda Bowad Yaret", "ch": "Ahmad Zahir"}], "ناشناس": [{"id": "cm7CtiYIrwo", "t": "Nashenas — Nan Ba Shpa", "ch": "Nashenas Official"}, {"id": "PJ83bs5RZPU", "t": "Nashenas — Muhabbat Awal Asana", "ch": "Nashenas Official"}], "فرهاد دریا": [{"id": "Njxjr9dStXg", "t": "Farhad Darya — Babulale", "ch": "Farhad Darya Official"}, {"id": "2bDxooLVqMw", "t": "Farhad Darya — Sheeshta Baashom", "ch": "Farhad Darya Official"}], "ګل زمان": [{"id": "InXUE6DRlTI", "t": "Ustad Gul Zaman — Goodar", "ch": "Afghan Smart"}, {"id": "Ne6gSBN1UM0", "t": "Ustad Gul Zaman — De Mele Atal", "ch": "Ramesh Productions"}], "بخت زمېنه": [{"id": "2ssywEhSqb0", "t": "Bakht Zamina — Be Dildara Me Na De", "ch": "farhad noori"}, {"id": "OPysO_KEqPM", "t": "Bakht Zamina — Ay Sarbaza Yara", "ch": "MAK"}], "نغمه": [{"id": "RidKlyej334", "t": "Naghma — Da Zwani Khooba", "ch": "NiKZAD Productions"}, {"id": "752aV1kKqAg", "t": "Naghma & Gul Panra — Baley Baley", "ch": "Musafar DVDs"}]};
+function openArtist(name){
+  const vids = ARTIST_VIDEOS[name]; if(!vids) return;
+  $("#avTitle").textContent = name;
+  $("#avMore").href = "https://www.youtube.com/results?search_query=" + encodeURIComponent(name + " سندرې");
+  const list = $("#avList"); list.innerHTML = "";
+  vids.forEach((v, i)=>{
+    const b = document.createElement("button");
+    b.style.cssText = "display:block;width:100%;text-align:right;background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:8px;font-size:14.5px;cursor:pointer";
+    b.textContent = v.t + " — " + v.ch;
+    b.addEventListener("click", ()=>{ $("#avFrame").src = "https://www.youtube-nocookie.com/embed/" + v.id + "?rel=0&autoplay=1"; });
+    list.appendChild(b);
+    if(i === 0) $("#avFrame").src = "https://www.youtube-nocookie.com/embed/" + v.id + "?rel=0";
+  });
+  $("#albumView").style.display = "block";
+  document.querySelector("main").scrollIntoView({behavior:"smooth"});
+}
+const _avb = $("#avBack"); if(_avb) _avb.addEventListener("click", ()=>{ $("#albumView").style.display="none"; $("#avFrame").src=""; });
+/* artist cards (new + viral) open the in-app album view */
+function wireArtistCards(container){
+  if(!container) return;
+  container.querySelectorAll(".album").forEach(card=>{
+    const name = card.querySelector("b") ? card.querySelector("b").textContent.trim() : "";
+    if(ARTIST_VIDEOS[name]){
+      card.style.cursor = "pointer";
+      card.addEventListener("click", (e)=>{ e.preventDefault(); openArtist(name); });
+    }
+  });
+}
+
 loadUploads(); render();
+setTimeout(()=>{ wireArtistCards($('#newArtists')); wireArtistCards($('#viral')); }, 300);
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
