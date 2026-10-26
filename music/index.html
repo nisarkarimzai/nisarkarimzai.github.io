@@ -129,6 +129,7 @@
   </div>
   <div class="note">لارښوونه: سندره په بېګراونډ کې هم چلیږي — سکرین بند کړه یا بل ایپ پرانیسه، سندره روانه وي. د سکرین په قلف کې هم د درولو او بدلولو تڼۍ کار کوي.</div>
 
+<div style="color:var(--dim);font-size:12px;line-height:1.9;margin-top:16px">سرچینې او جوازونه: د استاد قاسم او ولسي ټولګې سندرې د انټرنېټ ارشیف څخه په ازاد جواز CC0، د نینواز سندرې په جواز CC BY 3.0، او د خیام ترین سندره په جواز CC BY-SA 4.0 — د ټولو اصلي خاوندانو مننه.</div>
 <div id="albumView" style="display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:14px">
   <button id="avBack" style="background:var(--bg2);color:var(--gold);border:1px solid var(--line);border-radius:10px;padding:9px 16px;font-size:15px;cursor:pointer">بېرته</button>
   <h2 id="avTitle" style="margin:12px 0 8px"></h2>
@@ -174,7 +175,56 @@ const BUILTIN = [
   {id:"b3", title:"برو ای شوخ", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/beraw_ay_shokh.mp3", dur:589, kbps:56},
   {id:"b4", title:"ګل که با بلبل", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/gul_ke_ba_bulbul.mp3", dur:801, kbps:56},
   {id:"b5", title:"قافلۀ عمر", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/qafela_e_omr.mp3", dur:344, kbps:56},
-  {id:"b6", title:"ذوقِ حرم", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/zawq_haram.mp3", dur:631, kbps:56}
+  {id:"b6", title:"ذوقِ حرم", artist:"کلاسیک", album:"زړې کلاسیک سندرې", era:"old", src:"tracks/zawq_haram.mp3", dur:631, kbps:56},
+  {id:"x1", title:"Shabe Mahtab", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q01.mp3", dur:323, kbps:112},
+  {id:"x2", title:"Har Chand Piro", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q02.mp3", dur:422, kbps:112},
+  {id:"x3", title:"Tiri Sya Moni", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q03.mp3", dur:330, kbps:112},
+  {id:"x4", title:"Ze Daste Mahbob", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q04.mp3", dur:219, kbps:112},
+  {id:"x5", title:"Khosha An Siat", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q05.mp3", dur:191, kbps:112},
+  {id:"x6", title:"Ghar Behshtam", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q06.mp3", dur:181, kbps:112},
+  {id:"x7", title:"Yari May Shenawa Ra", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q07.mp3", dur:181, kbps:112},
+  {id:"x8", title:"Jonse Hosne", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q08.mp3", dur:191, kbps:112},
+  {id:"x9", title:"Baz Mibinamat Ay Gul", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q09.mp3", dur:190, kbps:112},
+  {id:"x10", title:"Shenidam Ke Madari Megoft", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q10.mp3", dur:203, kbps:112},
+  {id:"x11", title:"Taze Nasim Bahar", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q11.mp3", dur:213, kbps:112},
+  {id:"x12", title:"Jazi Darad Be", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q12.mp3", dur:197, kbps:112},
+  {id:"x13", title:"Janane Ze Ma", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q13.mp3", dur:187, kbps:112},
+  {id:"x14", title:"Shirin Jan", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q14.mp3", dur:189, kbps:112},
+  {id:"x15", title:"Ishq Agar Jeva Darad", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q15.mp3", dur:172, kbps:112},
+  {id:"x16", title:"Zolaykha Daram", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q16.mp3", dur:178, kbps:112},
+  {id:"x17", title:"Shah Layla", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q17.mp3", dur:169, kbps:112},
+  {id:"x18", title:"Negar Nazaneen", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q18.mp3", dur:170, kbps:112},
+  {id:"x19", title:"Iashiq Nashavi", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q19.mp3", dur:162, kbps:112},
+  {id:"x20", title:"Be Jan Amad Delan", artist:"استاد قاسم", album:"استاد قاسم — کلاسیک", era:"old", src:"tracks/qaseem/q20.mp3", dur:173, kbps:112},
+  {id:"x21", title:"Man Nai Nawazam", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n01.mp3", dur:433, kbps:112},
+  {id:"x22", title:"Naz Parwar Mahar (with Mahwash)", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n02.mp3", dur:230, kbps:112},
+  {id:"x23", title:"Hal Dil", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n03.mp3", dur:236, kbps:112},
+  {id:"x24", title:"Khoda Jan Khoda Jan", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n04.mp3", dur:231, kbps:112},
+  {id:"x25", title:"Goyand Ka Dard O Gham", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n05.mp3", dur:215, kbps:112},
+  {id:"x26", title:"Shakayat Daroom", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n06.mp3", dur:212, kbps:112},
+  {id:"x27", title:"Bia Soob Bia Sham", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n07.mp3", dur:191, kbps:112},
+  {id:"x28", title:"Zaan-Daam Ka Ba Khod", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n08.mp3", dur:386, kbps:112},
+  {id:"x29", title:"Shireen Omor Che", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n09.mp3", dur:268, kbps:112},
+  {id:"x30", title:"Agar Panhan (with Ahmad Zahir)", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n10.mp3", dur:950, kbps:112},
+  {id:"x31", title:"Az Naz O Choo Makhandi (with Ahmad Zahir)", artist:"نینواز", album:"نینواز", era:"old", src:"tracks/nainawaz/n11.mp3", dur:268, kbps:112},
+  {id:"x32", title:"Lovesong From Heart", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f01.mp3", dur:247, kbps:112},
+  {id:"x33", title:"Shah Kokojan", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f02.mp3", dur:229, kbps:112},
+  {id:"x34", title:"Spring Song From Istalif", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f03.mp3", dur:183, kbps:112},
+  {id:"x35", title:"Shighnani Flower, Lovesong From Takhar", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f04.mp3", dur:174, kbps:112},
+  {id:"x36", title:"Farkhari Song, Lovesong From Badakhshan", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f05.mp3", dur:389, kbps:112},
+  {id:"x37", title:"Laili And Madjnun, Ballad From Kunduz", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f06.mp3", dur:278, kbps:112},
+  {id:"x38", title:"My Beloved Walks In The Garden, Lovesong From The Mazar Region", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f07.mp3", dur:350, kbps:112},
+  {id:"x39", title:"Ghichak Solo", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f08.mp3", dur:228, kbps:112},
+  {id:"x40", title:"Bulbul, Song From The Mazar Region", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f09.mp3", dur:427, kbps:112},
+  {id:"x41", title:"Babolale, Lovesong From Paktia", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f10.mp3", dur:272, kbps:112},
+  {id:"x42", title:"Yellow Flower, Shepherd Song From Paktia", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f11.mp3", dur:161, kbps:112},
+  {id:"x43", title:"Sarinda Solo", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f12.mp3", dur:167, kbps:112},
+  {id:"x44", title:"Laila, Lovesong From Logar", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f13.mp3", dur:232, kbps:112},
+  {id:"x45", title:"Nuristani Dancesong", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f14.mp3", dur:99, kbps:112},
+  {id:"x46", title:"Nuristani Women's Song", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f15.mp3", dur:114, kbps:112},
+  {id:"x47", title:"Shah Kokojan (2)", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f16.mp3", dur:264, kbps:112},
+  {id:"x48", title:"Syamui And Jalali, Lovesong From Heart", artist:"دودیز موسیقاران", album:"ولسي ټولګه", era:"old", src:"tracks/folk/f17.mp3", dur:438, kbps:112},
+  {id:"x49", title:"Tareeno Pashto Song", artist:"خیام ترین", album:"ولسي ټولګه", era:"old", src:"tracks/folk/khayam.mp3", dur:82, kbps:112}
 ];
 /* ---------- state ---------- */
 const $ = s => document.querySelector(s);
